@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Allow direct access to API folder
+RewriteCond %{REQUEST_URI} ^/venue-booking-system/api/
+RewriteRule ^ - [L]
+
+# Redirect all other requests to public folder
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Handle public folder access
+RewriteCond %{REQUEST_URI} ^/public/
+RewriteRule ^public/(.*)$ public/$1 [L]

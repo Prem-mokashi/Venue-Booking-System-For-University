@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Access</title>
+</head>
+<body>
+    <h2>Testing Calendar API Access</h2>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        function testAPI() {
+            console.log("Testing API access...");
+            fetch("../api/get_bookings.php?t=" + Date.now())
+                .then(response => {
+                    console.log("Response status:", response.status);
+                    console.log("Response headers:", response.headers);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log("Raw response:", text);
+                    try {
+                        const data = JSON.parse(text);
+                        console.log("Parsed data:", data);
+                        document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    } catch (e) {
+                        console.error("JSON parse error:", e);
+                        document.getElementById('result').innerHTML = '<p>Error: ' + e.message + '</p><pre>' + text + '</pre>';
+                    }
+                })
+                .catch(error => {
+                    console.error("Fetch error:", error);
+                    document.getElementById('result').innerHTML = '<p>Fetch Error: ' + error.message + '</p>';
+                });
+        }
+    </script>
+</body>
+</html>

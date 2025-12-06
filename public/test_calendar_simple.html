@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calendar Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .calendar-day { 
+            display: inline-block; 
+            width: 40px; 
+            height: 40px; 
+            text-align: center; 
+            line-height: 40px; 
+            margin: 2px; 
+            border: 1px solid #ddd; 
+            background: white;
+            border-radius: 4px;
+        }
+        .calendar-day.booked { background: #dc2626 !important; color: white !important; font-weight: bold; }
+        .calendar-day.user-booking { background: #007bff !important; color: white !important; font-weight: bold; }
+        .debug { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>📅 Simple Calendar Test</h1>
+    <p>Testing calendar from public folder with correct API path.</p>
+    
+    <button onclick="testCalendar()" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">
+        Test Calendar
+    </button>
+    
+    <div id="debug" class="debug"></div>
+    <div id="calendar"></div>
+
+    <script>
+        let bookingsData = {};
+        
+        function log(message) {
+            const debug = document.getElementById('debug');
+            debug.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            console.log(message);
+        }
+        
+        function testCalendar() {
+            document.getElementById('debug').textContent = '';
+            document.getElementById('calendar').innerHTML = '';
+            
+            log('🚀 Starting calendar test...');
+            log('📡 Fetching from: ../api/get_bookings.php');
+            
+            fetch('../api/get_bookings.php')
+                .then(response => {
+                    log('📊 Response status: ' + response.status);
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    log('✅ API Success!');
+                    log('📋 Data: ' + JSON.stringify(data));
+                    
+                    if (data.success) {
+                        bookingsData = data.bookings;
+                        log('📅 Found ' + Object.keys(bookingsData).length + ' booking dates');
+                        
+                        // Render August 2025 calendar
+                        renderCalendar();
+                    } else {
+                        log('❌ API Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    log('❌ Error: ' + error.message);
+                });
+        }
+        
+        function renderCalendar() {
+            log('🎨 Rendering August 2025 calendar...');
+            
+            const year = 2025;
+            const month = 7; // August
+            
+            let html = '<h3>August 2025</h3>';
+            html += '<p>Days 25-31:</p>';
+            
+            for (let day = 25; day <= 31; day++) {
+                const dateString = `2025-08-${day.toString().padStart(2, '0')}`;
+                let className = 'calendar-day';
+                let title = dateString;
+                
+                if (bookingsData[dateString]) {
+                    const booking = bookingsData[dateString][0];
+                    if (booking.user === 'current') {
+                        className += ' user-booking';
+                        title += ' - Your booking: ' + booking.venue;
+                        log('🔵 Day ' + day + ': USER BOOKING - ' + booking.venue);
+                    } else {
+                        className += ' booked';
+                        title += ' - Booked: ' + booking.venue;
+                        log('🔴 Day ' + day + ': BOOKED - ' + booking.venue);
+                    }
+                } else {
+                    log('⚪ Day ' + day + ': Available');
+                }
+                
+                html += `<div class="${className}" title="${title}">${day}</div>`;
+            }
+            
+            document.getElementById('calendar').innerHTML = html;
+            log('✅ Calendar rendered!');
+        }
+        
+        // Auto-run test
+        window.onload = function() {
+            setTimeout(testCalendar, 500);
+        };
+    </script>
+</body>
+</html>
